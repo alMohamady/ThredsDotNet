@@ -1,69 +1,60 @@
 ﻿
 
+using System;
+
 namespace ThredsDotNet
 {
+    public delegate void CallBackDel(int sum); 
+
     internal class Program
     {
+
+        static CallBackDel? callBackDel;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Main Theard Start");
-            Thread t1 = new Thread(mathod01)
+
+            //ThreadStart ts = delegate () {
+            //    for (int i = 0; i < 5; i++)
+            //    {
+            //        Console.WriteLine($"From 001 : {i}");
+            //    }
+            //};
+
+            ParameterizedThreadStart start = new ParameterizedThreadStart(mathod01);
+            callBackDel = callBack;
+            Thread t1 = new Thread(start)
             {
                 Name = "tMathod01"
             };
-            Thread t2 = new Thread(mathod02)
-            {
-                Name = "tMathod02"
-            };
-            Thread t3 = new Thread(mathod03)
-            {
-                Name = "tMathod03"
-            };
 
-            t1.Start();
-            t2.Start();
-            t3.Start();
-
+            t1.Start(12);
+            
             Console.WriteLine("Main Theard End");
         }
 
 
-        static void mathod01()
+        static void mathod01(object mx)
         {
             Console.WriteLine("Start of M1");
-            for (int i = 0; i < 5; i++)
+            int sum = 0;
+            for (int i = 0; i < Convert.ToInt32(mx); i++)
             {
                 Console.WriteLine($"From m1 : {i}");
+                sum += i;
+            }
+            if (callBackDel != null)
+            {
+                callBackDel(sum);
             }
             Console.WriteLine("End of M1");
         }
 
-        static void mathod02()
+        static void callBack(int sum)
         {
-            Console.WriteLine("Start of M2");
-            for (int i = 0; i < 5; i++)
-            {
-                Console.WriteLine($"From m2 : {i}");
-                if (i == 3)
-                {
-                    Console.WriteLine("Start from databse");
-                    Thread.Sleep(10000);
-                    Console.WriteLine("End from databse");
-                }
-            }
-            Console.WriteLine("End of M2");
+            Console.WriteLine("the Sumtion is {0}", sum);
         }
-
-        static void mathod03()
-        {
-            Console.WriteLine("Start of M3");
-            for (int i = 0; i < 5; i++)
-            {
-                Console.WriteLine($"From m3 : {i}");
-            }
-            Console.WriteLine("End of M3");
-        }
-
     }
 }
 
