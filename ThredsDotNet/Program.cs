@@ -1,6 +1,6 @@
 ﻿
 
-using System;
+using System.Diagnostics;
 
 namespace ThredsDotNet
 {
@@ -8,44 +8,94 @@ namespace ThredsDotNet
 
     internal class Program
     {
+        static object _lock = new object();
+        static int Count = 0;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Main Theard Start");
-            Thread t1 = new Thread(m1);
-            Thread t2 = new Thread(m2);
+
+            //Stopwatch sw = Stopwatch.StartNew();
+
+            //Thread t1 = new Thread(increment);
+            //Thread t2 = new Thread(increment);
+            //Thread t3 = new Thread(increment);
+
+            //t1.Start();
+            //t2.Start();
+            //t3.Start();
+
+            //t1.Join();
+            //t2.Join();
+            //t3.Join();
+
+            //Console.WriteLine("The Total : {0}", Count);
+
+            //sw.Stop();
+            //Console.WriteLine("The time is {0}", sw.ElapsedTicks);
+
+            Thread t1 = new Thread(method01);
+            Thread t2 = new Thread(method02);
+
             t1.Start();
             t2.Start();
 
-            if (t1.Join(1000))
-            {
-                Console.WriteLine("M1 Completed");
-            }
-
+            t1.Join();
             t2.Join();
-            Console.WriteLine("M2 Completed");
 
-            if (!t1.IsAlive)
-            {
-                Console.WriteLine("M1 apported");
-            }
-            else
-            {
-                Console.WriteLine("M1 IsAlive");
-            }
             Console.WriteLine("Main Theard End");
         }
 
-        static void m1()
+        public static void method01()
         {
-            Console.WriteLine("Start M1 ");
-            Thread.Sleep(3000);
-            Console.WriteLine("End M1 ");
+            Monitor.Enter(_lock);
+            for (int i = 0; i < 5; i++)
+            {
+                Monitor.Pulse(_lock);
+                Console.WriteLine("Method 1 working : {0}", i);
+
+                Console.WriteLine("Method 1 Completed : {0}", i);
+                Monitor.Wait(_lock);
+            }
         }
 
-        static void m2()
+        public static void method02()
         {
-            Console.WriteLine("Start M2");
+            Monitor.Enter(_lock);
+            for (int i = 0; i < 5; i++)
+            {
+                Monitor.Pulse(_lock);
+                Console.WriteLine("Method 2 working : {0}", i);
+
+                Console.WriteLine("Method 2 Completed : {0}", i);
+                Monitor.Wait(_lock);
+            }
         }
+
+
+        static void increment()
+        {
+            for (int i = 0; i < 500000; i++)
+            {
+                //Count++;
+                //Interlocked.Increment(ref Count);
+                //lock (obj)
+                //{ 
+                //   Count++;
+                //}
+                bool lockToken = false;
+                Monitor.Enter(_lock, ref lockToken);
+                try
+                {
+                    Count++;
+                }
+                finally { 
+                    if (lockToken)
+                        Monitor.Exit(_lock); 
+                }
+            }
+        }
+
     }
 }
 
