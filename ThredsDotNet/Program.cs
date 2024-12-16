@@ -8,52 +8,43 @@ namespace ThredsDotNet
 
     internal class Program
     {
-
-        static CallBackDel? callBackDel;
-
         static void Main(string[] args)
         {
             Console.WriteLine("Main Theard Start");
+            Thread t1 = new Thread(m1);
+            Thread t2 = new Thread(m2);
+            t1.Start();
+            t2.Start();
 
-            //ThreadStart ts = delegate () {
-            //    for (int i = 0; i < 5; i++)
-            //    {
-            //        Console.WriteLine($"From 001 : {i}");
-            //    }
-            //};
-
-            ParameterizedThreadStart start = new ParameterizedThreadStart(mathod01);
-            callBackDel = callBack;
-            Thread t1 = new Thread(start)
+            if (t1.Join(1000))
             {
-                Name = "tMathod01"
-            };
+                Console.WriteLine("M1 Completed");
+            }
 
-            t1.Start(12);
-            
+            t2.Join();
+            Console.WriteLine("M2 Completed");
+
+            if (!t1.IsAlive)
+            {
+                Console.WriteLine("M1 apported");
+            }
+            else
+            {
+                Console.WriteLine("M1 IsAlive");
+            }
             Console.WriteLine("Main Theard End");
         }
 
-
-        static void mathod01(object mx)
+        static void m1()
         {
-            Console.WriteLine("Start of M1");
-            int sum = 0;
-            for (int i = 0; i < Convert.ToInt32(mx); i++)
-            {
-                Console.WriteLine($"From m1 : {i}");
-                sum += i;
-            }
-            if (callBackDel != null)
-            {
-                callBackDel(sum);
-            }
-            Console.WriteLine("End of M1");
+            Console.WriteLine("Start M1 ");
+            Thread.Sleep(3000);
+            Console.WriteLine("End M1 ");
         }
 
-        static void callBack(int sum)
+        static void m2()
         {
-            Console.WriteLine("the Sumtion is {0}", sum);
+            Console.WriteLine("Start M2");
         }
     }
 }
