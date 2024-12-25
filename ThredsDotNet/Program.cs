@@ -1,4 +1,5 @@
 ﻿
+using System.Net;
 using System.Threading;
 
 namespace ThredsDotNet
@@ -8,41 +9,44 @@ namespace ThredsDotNet
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Main Theard Start");
-            string filePath = "example.txt";
-            File.WriteAllText(filePath, "Hello, this is a test file for APM example!"); // Create a test file
+            string url = "https://google.com"; // URL of the content to download
+            string destinationPath = "downloaded_file.html";
 
-            // Begin the asynchronous read operation
-            FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024, true);
-            byte[] buffer = new byte[fileStream.Length];
+            using (WebClient webClient = new WebClient())
+            {
+                // Attach event handlers
+                webClient.DownloadFileCompleted += WebClient_DownloadFileCompleted;
+                webClient.DownloadProgressChanged += WebClient_DownloadProgressChanged;
 
-            IAsyncResult asyncResult = fileStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, new Tuple<FileStream, byte[]>(fileStream, buffer));
+                // Start asynchronous download
+                Console.WriteLine("Starting download...");
+                webClient.DownloadFileAsync(new Uri(url), destinationPath);
 
-            Console.WriteLine("Reading file asynchronously...");
-            Console.ReadLine(); // Wait to keep the application open
+                Console.WriteLine("Downloading file asynchronously...");
+                Console.ReadLine(); // Wait for user input to keep the console open
+            }
         }
 
-        static void ReadCallback(IAsyncResult asyncResult)
+        // Event handler for download progress
+        private static void WebClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            // Retrieve the state object
-            var state = (Tuple<FileStream, byte[]>)asyncResult.AsyncState;
-            FileStream fileStream = state.Item1;
-            byte[] buffer = state.Item2;
+            Console.WriteLine($"Download progress: {e.ProgressPercentage}%");
+        }
 
-            try
+        // Event handler for download completion
+        private static void WebClient_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            if (e.Error != null)
             {
-                // Complete the asynchronous read operation
-                int bytesRead = fileStream.EndRead(asyncResult);
-                string content = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Console.WriteLine($"File content:\n{content}");
+                Console.WriteLine($"Download failed: {e.Error.Message}");
             }
-            catch (Exception ex)
+            else if (e.Cancelled)
             {
-                Console.WriteLine($"Error reading file: {ex.Message}");
+                Console.WriteLine("Download canceled.");
             }
-            finally
+            else
             {
-                fileStream.Close();
+                Console.WriteLine("Download completed successfully!");
             }
         }
     }
