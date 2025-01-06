@@ -1,6 +1,4 @@
 ﻿
-using System.Net;
-using System.Threading;
 
 namespace ThredsDotNet
 {
@@ -9,45 +7,45 @@ namespace ThredsDotNet
 
         static void Main(string[] args)
         {
-            string url = "https://google.com"; // URL of the content to download
-            string destinationPath = "downloaded_file.html";
+            Console.WriteLine(" {0} main thread start  ", Thread.CurrentThread.ManagedThreadId);
+            //Task task = Task.Factory.StartNew(doSomething);
+            //task.Start();
+            //Task.Run(() => { doSomething(); });
+            //task.Wait();
 
-            using (WebClient webClient = new WebClient())
-            {
-                // Attach event handlers
-                webClient.DownloadFileCompleted += WebClient_DownloadFileCompleted;
-                webClient.DownloadProgressChanged += WebClient_DownloadProgressChanged;
+            Task<int> task = Task.Run(() => { 
+              return getResult(13); 
+            });
 
-                // Start asynchronous download
-                Console.WriteLine("Starting download...");
-                webClient.DownloadFileAsync(new Uri(url), destinationPath);
+            //task.Wait();
 
-                Console.WriteLine("Downloading file asynchronously...");
-                Console.ReadLine(); // Wait for user input to keep the console open
-            }
+            Console.WriteLine("the result is {0}", task.Result);
+
+            Console.WriteLine(" {0} main thread end  ", Thread.CurrentThread.ManagedThreadId);
         }
 
-        // Event handler for download progress
-        private static void WebClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        static int getResult(int count)
         {
-            Console.WriteLine($"Download progress: {e.ProgressPercentage}%");
+            int val = 0;
+            Console.WriteLine(" {0} nested thread start  ", Thread.CurrentThread.ManagedThreadId);
+            for (int i = 0; i < count; i++)
+            {
+                Console.WriteLine("index is {0}", i);
+                val += i;
+            }
+            Console.WriteLine(" {0} nested thread end  ", Thread.CurrentThread.ManagedThreadId);
+            return val;
         }
 
-        // Event handler for download completion
-        private static void WebClient_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+
+        static void doSomething()
         {
-            if (e.Error != null)
+            Console.WriteLine(" {0} nested thread start  ", Thread.CurrentThread.ManagedThreadId);
+            for (int i = 0; i < 10; i++)
             {
-                Console.WriteLine($"Download failed: {e.Error.Message}");
+                Console.WriteLine("index is {0}",  i);
             }
-            else if (e.Cancelled)
-            {
-                Console.WriteLine("Download canceled.");
-            }
-            else
-            {
-                Console.WriteLine("Download completed successfully!");
-            }
+            Console.WriteLine(" {0} nested thread end  ", Thread.CurrentThread.ManagedThreadId);
         }
     }
 }
