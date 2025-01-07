@@ -10,31 +10,40 @@ namespace ThredsDotNet
         {
             Console.WriteLine(" {0} main thread start  ", Thread.CurrentThread.ManagedThreadId);
 
-            Console.WriteLine("start parallel loop C#");
-            ParallelOptions parallelOptions = new ParallelOptions() { 
-               MaxDegreeOfParallelism = -1,
+            //Console.WriteLine("start parallel loop C#");
+            ParallelOptions parallelOptions = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = 2,
             };
 
-            int count = 0;
+            //List<int> collection = Enumerable.Range(0, 10).ToList();
 
-            Parallel.For(0, 10, parallelOptions,  (x, breakLoop) => {
+            //Parallel.ForEach(collection, parallelOptions, item =>
+            //{
+            //    Console.WriteLine(" {0} Parallel thread val {1}  ", Thread.CurrentThread.ManagedThreadId, item);
+            //});
 
-                count += 1;
-                if (count >= 5)
-                {
-                    Console.WriteLine("loop will break {0}", count);
-                    breakLoop.Break();
-                }
-                else
-                {
-                    Console.WriteLine(" {0} parallel working on val {1}  ", Thread.CurrentThread.ManagedThreadId, count);
-                    Thread.Sleep(100);
-                }
-            });
+            Parallel.Invoke(parallelOptions, 
+                () => doThometing(10),
+                () => doThometing(20),
+                delegate  () {
+                    Console.WriteLine(" {0} method 2 ", Thread.CurrentThread.ManagedThreadId);
+                },
+                () => Console.WriteLine(" {0} method 3 ", Thread.CurrentThread.ManagedThreadId)
+                
+                );
+
+
 
 
             Console.WriteLine(" {0} main thread end  ", Thread.CurrentThread.ManagedThreadId);
             Console.ReadKey();
+        }
+
+
+        static void doThometing(int val)
+        {
+            Console.WriteLine(" {0} thread # and val {1}  ", Thread.CurrentThread.ManagedThreadId, val);
         }
     }
 }
