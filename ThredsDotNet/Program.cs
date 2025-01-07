@@ -1,43 +1,36 @@
 ﻿
+using System.Diagnostics;
+
 namespace ThredsDotNet
 {
     internal class Program
     {
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             Console.WriteLine(" {0} main thread start  ", Thread.CurrentThread.ManagedThreadId);
 
-            await CallMe();
+            Stopwatch sw = Stopwatch.StartNew();
+            Console.WriteLine("start noraml loop C#");
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine(" {0}  thread working on val {1}  ", Thread.CurrentThread.ManagedThreadId, i);
+                Thread.Sleep(100);
+            }
+            sw.Stop();
+            Console.WriteLine("time is {0} ",sw.ElapsedMilliseconds);
+
+            sw = Stopwatch.StartNew();
+            Console.WriteLine("start parallel loop C#");
+            Parallel.For(0, 10, x => {
+                Console.WriteLine(" {0} parallel working on val {1}  ", Thread.CurrentThread.ManagedThreadId, x);
+                Thread.Sleep(100);
+            });
+            sw.Stop();
+            Console.WriteLine("time is {0} ", sw.ElapsedMilliseconds);
 
             Console.WriteLine(" {0} main thread end  ", Thread.CurrentThread.ManagedThreadId);
             Console.ReadKey();
-        }
-
-        static async Task CallMe()
-        {
-            Console.WriteLine("Hi I'am calling you");
-            string processVal = await process(true);
-            Console.WriteLine("Call with value {0}", processVal);
-        }
-
-        static Task<string> process(bool ok)
-        {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    Thread.Sleep(1000);
-                    if (ok)
-                        throw new Exception("My Ex");
-
-                    return "process completed";
-                }
-                catch (Exception ex)
-                { 
-                    return ex.Message;
-                }
-            });
         }
     }
 }
