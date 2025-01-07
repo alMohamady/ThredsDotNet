@@ -1,6 +1,4 @@
 ﻿
-using System.Diagnostics;
-
 namespace ThredsDotNet
 {
     internal class Program
@@ -10,30 +8,20 @@ namespace ThredsDotNet
         {
             Console.WriteLine(" {0} main thread start  ", Thread.CurrentThread.ManagedThreadId);
 
-            //Console.WriteLine("start parallel loop C#");
-            ParallelOptions parallelOptions = new ParallelOptions()
+
+            var vals = Enumerable.Range(0, 100);
+
+            //.WithDegreeOfParallelism(2)
+
+            var evens = from num in vals.AsParallel()
+                        where num % 2 == 0
+                        select num;
+
+            evens.ForAll(x => Console.WriteLine(x));
+            foreach (var ev in evens)
             {
-                MaxDegreeOfParallelism = 2,
-            };
-
-            //List<int> collection = Enumerable.Range(0, 10).ToList();
-
-            //Parallel.ForEach(collection, parallelOptions, item =>
-            //{
-            //    Console.WriteLine(" {0} Parallel thread val {1}  ", Thread.CurrentThread.ManagedThreadId, item);
-            //});
-
-            Parallel.Invoke(parallelOptions, 
-                () => doThometing(10),
-                () => doThometing(20),
-                delegate  () {
-                    Console.WriteLine(" {0} method 2 ", Thread.CurrentThread.ManagedThreadId);
-                },
-                () => Console.WriteLine(" {0} method 3 ", Thread.CurrentThread.ManagedThreadId)
-                
-                );
-
-
+                Console.WriteLine("number is {0}", ev);
+            }
 
 
             Console.WriteLine(" {0} main thread end  ", Thread.CurrentThread.ManagedThreadId);
@@ -41,10 +29,6 @@ namespace ThredsDotNet
         }
 
 
-        static void doThometing(int val)
-        {
-            Console.WriteLine(" {0} thread # and val {1}  ", Thread.CurrentThread.ManagedThreadId, val);
-        }
     }
 }
 
